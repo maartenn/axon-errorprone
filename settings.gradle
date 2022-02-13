@@ -1,0 +1,4 @@
+rootProject.name = 'axon-framework-error-prone'
+include 'axon-error-prone'
+include 'axon-sample'
+

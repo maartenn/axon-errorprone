@@ -1,0 +1,18 @@
+subprojects {
+    apply plugin: 'java'
+
+    group = 'com.github.axon_errorprone'
+    version = '0.0.1-SNAPSHOT'
+
+    sourceCompatibility = 11
+    targetCompatibility = 11
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        implementation 'org.axonframework:axon-eventsourcing:4.5.8'
+        implementation 'io.projectreactor:reactor-core:3.4.14'
+    }
+}
