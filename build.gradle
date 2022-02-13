@@ -2,16 +2,18 @@ subprojects {
     apply plugin: 'java'
 
     group = 'com.github.axon_errorprone'
-    version = '0.0.1-SNAPSHOT'
+    version = '0.0.1'
 
     sourceCompatibility = 11
     targetCompatibility = 11
 
     repositories {
         mavenCentral()
+        maven { url 'https://jitpack.io' }
     }
 
     dependencies {
+        implementation 'com.github.axon-errorprone:axon-errorprone:$version'
         implementation 'org.axonframework:axon-eventsourcing:4.5.8'
         implementation 'io.projectreactor:reactor-core:3.4.14'
     }
