@@ -3,6 +3,7 @@ package com.github.axon_errorprone;
 import com.google.common.base.Predicates;
 import com.google.errorprone.CompilationTestHelper;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Mono;
 
 
 class TestInitialResultNotCalledOnSubscriptionQueryResult {
@@ -10,10 +11,18 @@ class TestInitialResultNotCalledOnSubscriptionQueryResult {
         CompilationTestHelper.newInstance(InitialResultNotCalledOnSubscriptionQuery.class, getClass());
 
     @Test
-    void positiveCases() {
+    void positiveCaseMethodInvocation() {
         compilationHelper
             .expectErrorMessage("X", Predicates.containsPattern("InitialResultNotCalledOnSubscriptionQuery"))
-            .addSourceFile("InitialResultNotCalledOnSQPositiveCases.java")
+            .addSourceFile("InitialResultNotCalledOnSQPositiveCaseMethodInvocation.java")
+            .doTest();
+    }
+
+    @Test
+    void positiveCasesMethodReference() {
+        compilationHelper
+            .expectErrorMessage("X", Predicates.containsPattern("InitialResultNotCalledOnSubscriptionQuery"))
+            .addSourceFile("InitialResultNotCalledOnSQPositiveCaseMethodReference.java")
             .doTest();
     }
 

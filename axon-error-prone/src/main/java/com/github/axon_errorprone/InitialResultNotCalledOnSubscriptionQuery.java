@@ -8,12 +8,17 @@ import com.google.auto.service.AutoService;
 import com.google.errorprone.BugPattern;
 import com.google.errorprone.VisitorState;
 import com.google.errorprone.bugpatterns.BugChecker;
+import com.google.errorprone.bugpatterns.BugChecker.LambdaExpressionTreeMatcher;
+import com.google.errorprone.bugpatterns.BugChecker.MemberReferenceTreeMatcher;
 import com.google.errorprone.bugpatterns.BugChecker.MethodInvocationTreeMatcher;
 import com.google.errorprone.matchers.Description;
 import com.google.errorprone.matchers.Matcher;
+import com.google.errorprone.matchers.Matchers;
 import com.google.errorprone.matchers.method.MethodMatchers;
 import com.google.errorprone.util.ASTHelpers;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -41,16 +46,16 @@ import org.axonframework.queryhandling.SubscriptionQueryResult;
     severity = ERROR)
 @AutoService(BugChecker.class)
 public class InitialResultNotCalledOnSubscriptionQuery extends BugChecker implements
-    MethodInvocationTreeMatcher {
+    MethodInvocationTreeMatcher, MemberReferenceTreeMatcher {
 
     private static final Matcher<ExpressionTree> SQ_UPDATES_MATCHER =
         anyOf(
-            MethodMatchers.instanceMethod().onDescendantOf(SubscriptionQueryResult.class.getName())
+            Matchers.anyMethod().onDescendantOf(SubscriptionQueryResult.class.getName())
                 .named("updates"));
 
     private static final Matcher<ExpressionTree> SQ_INITIALRESULT_MATCHER =
         anyOf(
-            MethodMatchers.instanceMethod().onDescendantOf(SubscriptionQueryResult.class.getName())
+            Matchers.anyMethod().onDescendantOf(SubscriptionQueryResult.class.getName())
                 .named("initialResult"));
 
     private static final Matcher<ExpressionTree> SQ_MATCHER = isSameType(
@@ -61,12 +66,25 @@ public class InitialResultNotCalledOnSubscriptionQuery extends BugChecker implem
         return !SQ_MATCHER.matches(receiver, state);
     }
 
+
     @Override
     public Description matchMethodInvocation(MethodInvocationTree tree, VisitorState state) {
         if (!SQ_UPDATES_MATCHER.matches(tree, state)) {
             return Description.NO_MATCH;
         }
 
+        return getDescription(tree, state);
+    }
+
+    @Override
+    public Description matchMemberReference(MemberReferenceTree tree, VisitorState state) {
+        if (!SQ_UPDATES_MATCHER.matches(tree, state)) {
+            return Description.NO_MATCH;
+        }
+        return getDescription(tree, state);
+    }
+
+    private Description getDescription(ExpressionTree tree, VisitorState state) {
         // Checks for validating use on method call chain.
         ExpressionTree receiver = tree;
         do {
@@ -101,9 +119,10 @@ public class InitialResultNotCalledOnSubscriptionQuery extends BugChecker implem
         return describeMatch(tree);
     }
 
+
     /**
-     * Scan for a call to SubscriptionQueryResult.initialResult()
-     */
+         * Scan for a call to SubscriptionQueryResult.initialResult() or ::initialResult
+         */
     private static class ValidSubscriptionQueryScanner extends TreeScanner<Void, VisitorState> {
 
         private final Symbol searchedBufferSymbol;
@@ -123,17 +142,27 @@ public class InitialResultNotCalledOnSubscriptionQuery extends BugChecker implem
 
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, VisitorState state) {
+            return matches(tree, state) ? null : super.visitMethodInvocation(tree, state);
+        }
+
+        @Override
+        public Void visitMemberReference(MemberReferenceTree tree, VisitorState state) {
+            return matches(tree, state) ? null :super.visitMemberReference(tree,state);
+        }
+
+
+        private boolean matches(ExpressionTree tree, VisitorState state) {
             if (valid) {
-                return null;
+                return true;
             }
             Symbol bufferSymbol = ASTHelpers.getSymbol(ASTHelpers.getReceiver(tree));
 
-            if (searchedBufferSymbol.equals(bufferSymbol) && SQ_INITIALRESULT_MATCHER.matches(tree, state)) {
-                    valid = true;
+            if (searchedBufferSymbol.equals(bufferSymbol) && SQ_INITIALRESULT_MATCHER.matches(tree,
+                state)) {
+                valid = true;
             }
-            return super.visitMethodInvocation(tree, state);
+            return false;
         }
-
     }
 
 }
