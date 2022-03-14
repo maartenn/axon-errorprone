@@ -1,8 +1,8 @@
 apply from: "$rootDir/gradle/publishing.gradle"
 
 dependencies {
-    implementation 'com.google.errorprone:error_prone_core:2.11.0'
-    implementation 'com.google.errorprone:error_prone_annotation:2.11.0'
+    implementation 'com.google.errorprone:error_prone_core:2.10.0'
+    implementation 'com.google.errorprone:error_prone_annotation:2.10.0'
 
     annotationProcessor 'com.google.auto.service:auto-service:1.0-rc6'
 

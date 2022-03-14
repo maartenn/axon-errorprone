@@ -13,11 +13,9 @@ import com.google.errorprone.bugpatterns.BugChecker.MemberReferenceTreeMatcher;
 import com.google.errorprone.bugpatterns.BugChecker.MethodInvocationTreeMatcher;
 import com.google.errorprone.matchers.Description;
 import com.google.errorprone.matchers.Matcher;
-import com.google.errorprone.matchers.Matchers;
 import com.google.errorprone.matchers.method.MethodMatchers;
 import com.google.errorprone.util.ASTHelpers;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -50,13 +48,23 @@ public class InitialResultNotCalledOnSubscriptionQuery extends BugChecker implem
 
     private static final Matcher<ExpressionTree> SQ_UPDATES_MATCHER =
         anyOf(
-            Matchers.anyMethod().onDescendantOf(SubscriptionQueryResult.class.getName())
+            MethodMatchers.instanceMethod().onDescendantOf(SubscriptionQueryResult.class.getName())
                 .named("updates"));
 
     private static final Matcher<ExpressionTree> SQ_INITIALRESULT_MATCHER =
         anyOf(
-            Matchers.anyMethod().onDescendantOf(SubscriptionQueryResult.class.getName())
+            MethodMatchers.instanceMethod().onDescendantOf(SubscriptionQueryResult.class.getName())
                 .named("initialResult"));
+// when updated to errorprone 2.11 should be changed into:
+//    private static final Matcher<ExpressionTree> SQ_UPDATES_MATCHER =
+//        anyOf(
+//                Matchers.anyMethod().onDescendantOf(SubscriptionQueryResult.class.getName())
+//        .named("updates"));
+//    private static final Matcher<ExpressionTree> SQ_INITIALRESULT_MATCHER =
+//        anyOf(
+//            Matchers.anyMethod().onDescendantOf(SubscriptionQueryResult.class.getName())
+//                .named("initialResult"));
+
 
     private static final Matcher<ExpressionTree> SQ_MATCHER = isSameType(
         SubscriptionQueryResult.class);
